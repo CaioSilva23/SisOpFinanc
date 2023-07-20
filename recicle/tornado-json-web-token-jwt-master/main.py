@@ -4,7 +4,7 @@ import tornado.web
 import jwt
 import datetime
 from tornado.options import define, options
-from auth import jwtauth
+from apps.auth import jwtauth
 import os.path
 
 SECRET = 'my_secret_key'

@@ -19,6 +19,7 @@ jwt_options = {
     'verify_aud': False
 }
 
+
 def is_valid_header(parts):
     """
         Validate the header
@@ -32,20 +33,23 @@ def is_valid_header(parts):
 
     return True
 
+
 def return_auth_error(handler, message):
     """
-        Return authorization error 
+        Return authorization error
     """
     handler._transforms = []
     handler.set_status(AUTHORIZTION_ERROR_CODE)
     handler.write(message)
     handler.finish()
 
+
 def return_header_error(handler):
     """
         Returh authorization header error
     """
     return_auth_error(handler, INVALID_HEADER_MESSAGE)
+
 
 def jwtauth(handler_class):
     """
@@ -59,16 +63,16 @@ def jwtauth(handler_class):
                 parts = auth.split()
 
                 if not is_valid_header(parts):
-                     return_header_error(handler)
+                    return_header_error(handler)
 
-                token = parts[1]                            
-                try:                   
+                token = parts[1]                        
+                try:
                     jwt.decode(
                         token,
                         SECRET_KEY,
                         options=jwt_options,
                         algorithms='HS256'
-                    )                
+                    )         
                 except Exception as err:
                     return_auth_error(handler, str(err))
 
@@ -93,11 +97,25 @@ def jwtauth(handler_class):
     handler_class._execute = wrap_execute(handler_class._execute)
     return handler_class
 
+
 def generate_jwt_token(user):
     payload = {
         'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1)  # Token expira em 1 dia
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)  # noqa Token expira 30 minutos
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     return token
+
+
+def get_user(token):
+    try:
+        user = jwt.decode(
+                    token,
+                    SECRET_KEY,
+                    options=jwt_options,
+                    algorithms='HS256'
+                )
+        return user.get('user_id')
+    except Exception:
+        pass

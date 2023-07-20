@@ -3,17 +3,15 @@ import tornado.web
 from apps.user import LoginHandler, RegisterHandler
 from apps.acoes import AcaoHandler, AcoesHandler
 import tornado.options
-# from database.conexao import Conexao
+#import torndb
+from tornado.options import options
 
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            # auth
             (r"/register", RegisterHandler),
             (r"/login", LoginHandler),
-
-            # crud acoes
             (r"/acoes", AcoesHandler),
             (r"/acao/(\d+)", AcaoHandler)
         ]
@@ -23,7 +21,23 @@ class Application(tornado.web.Application):
 
         )
         tornado.web.Application.__init__(self, handlers, **settings)
-        # self.session = Conexao.cria_session()
+        # self.db = torndb.Connection(
+        #     host = options.mysql_host,
+        #     database = options.mysql_database,
+        #     user = options.mysql_user,
+        #     password = options.mysql_password,)
+        
+
+
+# def make_app():
+#     return tornado.web.Application([
+#         (r"/register", RegisterHandler),
+#         (r"/login", LoginHandler),
+#         (r"/acoes", AcoesHandler),
+#         (r"/acao/(\d+)", AcaoHandler)
+#         # (r"/auth", AuthHandler,),
+#         # (r"/users/(\d+)", UserHandler),
+#     ])
 
 
 if __name__ == "__main__":
@@ -31,3 +45,8 @@ if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(8888)
     tornado.ioloop.IOLoop.instance().start()
+
+# if __name__ == "__main__":
+#     app = make_app()
+#     app.listen(8888)
+#     tornado.ioloop.IOLoop.current().start()
