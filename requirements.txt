@@ -1,0 +1,5 @@
+greenlet==2.0.2
+PyJWT==2.8.0
+SQLAlchemy==2.0.19
+tornado==6.3.2
+typing_extensions==4.7.1
