@@ -15,7 +15,7 @@ class Conexao():
         # CONN = f'mysql://{USUARIO}:{SENHA}@{HOST}:{PORT}/{BANCO}'
         # sqlite:///:dbsqlite
         # CONN = f'sqlite:///:dbsqliteteste'
-        engine = create_engine("sqlite:///sqlite.db", echo=True)
+        engine = create_engine("sqlite:///sqlite.db")
         return engine
 
     @classmethod

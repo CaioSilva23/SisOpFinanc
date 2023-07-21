@@ -1,20 +1,10 @@
-import tornado.ioloop
-import tornado.web
 from collections import defaultdict
 from queries.query_user import UserQuery
 from handlers.auth import generate_jwt_token, get_user, jwtauth
-import json
-from json import JSONDecodeError
 from utils.valid import strong_password, email_valid
 from http import HTTPStatus
-
-
-class UserBase(tornado.web.RequestHandler):
-    def data(self):
-        try:
-            return json.loads(self.request.body)
-        except JSONDecodeError:
-            return {}
+from .base import UserBase
+import tornado.web
 
 
 class RegisterHandler(UserBase):

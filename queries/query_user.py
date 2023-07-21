@@ -23,6 +23,7 @@ class UserQuery:
         user = User(email=email, password=hash_password(password))
         session.add(user)
         session.commit()
+        return user
 
     @classmethod
     def chack_password(cls, user_id, old_password):

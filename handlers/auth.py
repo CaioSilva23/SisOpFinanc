@@ -64,15 +64,14 @@ def jwtauth(handler_class):
 
                 if not is_valid_header(parts):
                     return_header_error(handler)
-
-                token = parts[1]                        
+                token = parts[1]                   
                 try:
                     jwt.decode(
                         token,
                         SECRET_KEY,
                         options=jwt_options,
                         algorithms='HS256'
-                    )         
+                    )    
                 except Exception as err:
                     return_auth_error(handler, str(err))
 

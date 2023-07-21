@@ -5,7 +5,7 @@ from handlers.UserHandler.user import LoginHandler, \
                                     ChangePasswordHandler
 from handlers.AcaoHandler.acoes import AcaoHandler, AcoesHandler
 import tornado.options
-# from database.conexao import Conexao
+from logzero import logger
 
 
 class Application(tornado.web.Application):
@@ -34,4 +34,5 @@ if __name__ == "__main__":
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(8888)
+    logger.info(f'Listening server on port {8888}')
     tornado.ioloop.IOLoop.instance().start()
