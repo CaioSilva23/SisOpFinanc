@@ -1,7 +1,7 @@
 import tornado.ioloop
 import tornado.web
 from collections import defaultdict
-from database.query_user import authenticated, user_email_exists, save_user, chack_password, change_password
+from queries.query_user import authenticated, user_email_exists, save_user, chack_password, change_password
 from handlers.auth import generate_jwt_token, get_user
 import json
 from utils.valid import strong_password, email_valid

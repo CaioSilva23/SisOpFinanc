@@ -2,7 +2,7 @@ import tornado.ioloop
 import tornado.web
 from database.models import Acao
 from handlers.auth import jwtauth, get_user
-from database.query_acao import acoes_list, get_acao_id
+from queries.query_acao import acoes_list, get_acao_id
 import json
 
 
@@ -34,8 +34,6 @@ class AcoesHandler(tornado.web.RequestHandler):
 
 @jwtauth
 class AcaoHandler(tornado.web.RequestHandler):
-    # SUPPORTED_METHODS = ("GET", "PUT", "DELETE")
-
     def get_token(self):
         token = self.request.headers.get('Authorization').split()[1]
         return token
@@ -46,4 +44,9 @@ class AcaoHandler(tornado.web.RequestHandler):
         if not acao:
             self.set_status(404)
             return self.write({'error': {'acao': 'Ação not found'}})
-        return self.write({"Ação": {"id": acao.id, "name": acao.name, "description": acao.description, "value": acao.value, "user": acao.user_id}})  # noqa
+        return self.write({"Ação":
+                           {"id": acao.id,
+                            "name": acao.name,
+                            "description": acao.description,
+                            "value": acao.value,
+                            "user": acao.user_id}})
