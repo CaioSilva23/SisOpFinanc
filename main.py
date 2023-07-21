@@ -1,7 +1,9 @@
 import tornado.ioloop
 import tornado.web
-from handlers.user import LoginHandler, RegisterHandler, ChangePasswordHandler
-from handlers.acoes import AcaoHandler, AcoesHandler
+from handlers.UserHandler.user import LoginHandler, \
+                                    RegisterHandler, \
+                                    ChangePasswordHandler
+from handlers.AcaoHandler.acoes import AcaoHandler, AcoesHandler
 import tornado.options
 # from database.conexao import Conexao
 

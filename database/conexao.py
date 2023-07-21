@@ -20,7 +20,6 @@ class Conexao():
 
     @classmethod
     def cria_session(cls):
-        conexao = cls.conecta()
-        Session = sessionmaker(bind=conexao)
-        session = Session()
-        return session
+        engine = cls.conecta()
+        Session = sessionmaker(bind=engine)
+        return Session()
