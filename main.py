@@ -1,7 +1,7 @@
 import tornado.ioloop
 import tornado.web
-from apps.user import LoginHandler, RegisterHandler
-from apps.acoes import AcaoHandler, AcoesHandler
+from handlers.user import LoginHandler, RegisterHandler, ChangePasswordHandler
+from handlers.acoes import AcaoHandler, AcoesHandler
 import tornado.options
 # from database.conexao import Conexao
 
@@ -12,6 +12,8 @@ class Application(tornado.web.Application):
             # auth
             (r"/register", RegisterHandler),
             (r"/login", LoginHandler),
+            (r"/change-password", ChangePasswordHandler),
+            # (r"/reset-password", ResetPassword),
 
             # crud acoes
             (r"/acoes", AcoesHandler),

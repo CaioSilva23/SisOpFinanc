@@ -1,7 +1,7 @@
 import tornado.ioloop
 import tornado.web
 from database.models import Acao
-from apps.auth import jwtauth, get_user
+from handlers.auth import jwtauth, get_user
 from database.query_acao import acoes_list, get_acao_id
 import json
 

@@ -10,7 +10,7 @@ class User(Base):
     __tablename__ = 'User'
     id = Column(Integer, primary_key=True)
     email = Column(String(20), unique=True)
-    password = Column(String(20))
+    password = Column(String(200))
 
 
 class Acao(Base):
