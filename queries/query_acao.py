@@ -8,7 +8,7 @@ session = Conexao.cria_session()
 class AcaoQuery:
     @classmethod
     def list(cls):
-        acoes = session.query(Acao).all()
+        acoes = session.query(Acao).filter(Acao.stock > 0).all()
         return acoes
 
     @classmethod
@@ -22,3 +22,10 @@ class AcaoQuery:
         session.commit()
         session.close
         return acao
+
+    @classmethod
+    def update(cls, id, quantity=None):
+        acao = cls.get_id(id=id)
+        acao.stock -= quantity
+        session.commit()
+        session.close()

@@ -8,6 +8,8 @@ from .base import Base
 class AcoesHandler(Base):
     def get(self):
         acoes = AcaoQuery.list()
+        if not acoes:
+            return self.write({"info": "nenhuma ação disponível a venda!"})
         self.write({"Ações":
                     [{"id": acao.id, "name": acao.name,
                         "description": acao.description,

@@ -23,6 +23,7 @@ class UserQuery:
         user = User(name=name, email=email, password=hash_password(password))
         session.add(user)
         session.commit()
+        session.close()
         return user
 
     @classmethod
@@ -36,4 +37,5 @@ class UserQuery:
         if user:
             user.password = hash_password(new_password)
             session.commit()
+            session.close()
             return user

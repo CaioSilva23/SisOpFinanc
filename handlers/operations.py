@@ -16,7 +16,6 @@ class OperationsHandler(Base):
                       "acao_id": operation.acao_id,
                       "type_operation": operation.type_operation,
                       "quantity": operation.quantity,
-                      "price_unit": operation.price_unit,
                       "price_total": operation.price_total,
                       "data_operacao": f'{operation.date}'}
                         for operation in operations]})
@@ -49,17 +48,11 @@ class OperationsHandler(Base):
             acao_id=acao_id,
             type_operation=type_operation,
             quantity=quantity,
-            price_unit=acao.price_unit,
             price_total=acao.price_unit * quantity,
             date=date
             )
 
-        # operacao = OperationQuery.get_operation_and_acao(acao_id=acao_id)
-        # if operacao:
-        #     OperationQuery.update_operacao_acao(operacao=operacao, nova_operacao=nova_operacao)
-        #     return self.write({"message": "Operation created successfully"})
-
-        OperationQuery.save(operation=nova_operacao, acao=acao)
+        OperationQuery.save(operation=nova_operacao, acao_id=acao_id)
         self.write({"message": "Operation created successfully"})
 
 
@@ -89,3 +82,4 @@ class OperationIdHandler(Base):
             return self.write({"success": "Operação deletada com sucesso!"})
         else:
             return self.write({"error": "Esta operação não existe!"})
+

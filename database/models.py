@@ -1,4 +1,10 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy import Column, \
+                        Integer, \
+                        String, \
+                        Float, \
+                        DateTime, \
+                        ForeignKey, \
+                        CheckConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from database.conexao import Conexao
@@ -13,6 +19,7 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
+    money = Column(Float, default=100)
 
     operacoes = relationship('Operacao', back_populates='user')
 
@@ -36,7 +43,6 @@ class Operacao(Base):
     acao_id = Column(Integer, ForeignKey('acoes.id'), nullable=False)
     type_operation = Column(String, nullable=False)  # Compra ou venda
     quantity = Column(Integer, nullable=False)
-    price_unit = Column(Float, nullable=False)
     price_total = Column(Float, nullable=False)
     date = Column(DateTime, nullable=False)
 
