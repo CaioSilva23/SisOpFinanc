@@ -3,19 +3,19 @@ from queries.query_user import UserQuery
 from handlers.auth import generate_jwt_token, get_user, jwtauth
 from utils.valid import strong_password, email_valid
 from http import HTTPStatus
-from .base import UserBase
-import tornado.web
+from .base import Base
 
 
-class RegisterHandler(UserBase):
+class RegisterHandler(Base):
     def post(self):
         _my_errors = defaultdict(list)
 
+        name = self.data().get('name')
         email = self.data().get('email')
         password = self.data().get('password')
         password2 = self.data().get('password2')
 
-        if not (email and password and password2):
+        if not (name and email and password and password2):
             self.set_status(HTTPStatus.BAD_REQUEST)
             return self.write({"error": "fill in all fields"})
         else:
@@ -39,12 +39,12 @@ class RegisterHandler(UserBase):
                 return self.write(_my_errors)
 
             # salvo o novo usuário
-            UserQuery.save_user(email=email, password=password)
+            UserQuery.save_user(name=name, email=email, password=password)
             return self.write({"message": "User created successfully"})
 
 
-class LoginHandler(UserBase):
-    def post(self):
+class LoginHandler(Base):
+    async def post(self):
         email = self.data().get('email')
         password = self.data().get('password')
         if (email and password):
@@ -57,7 +57,7 @@ class LoginHandler(UserBase):
 
 
 @jwtauth
-class ChangePasswordHandler(UserBase):
+class ChangePasswordHandler(Base):
     def get_token(self):
         token = self.request.headers.get('Authorization').split()[1]
         return token

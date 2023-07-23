@@ -1,9 +1,10 @@
 import tornado.ioloop
 import tornado.web
-from handlers.UserHandler.user import LoginHandler, \
+from handlers.user import LoginHandler, \
                                     RegisterHandler, \
                                     ChangePasswordHandler
-from handlers.AcaoHandler.acoes import AcaoHandler, AcoesHandler
+from handlers.acoes import AcaoHandler, AcoesHandler
+from handlers.operations import OperationsHandler, OperationHandler, OperationIdHandler
 import tornado.options
 from logzero import logger
 
@@ -19,7 +20,12 @@ class Application(tornado.web.Application):
 
             # crud acoes
             (r"/acoes", AcoesHandler),
-            (r"/acao/(\d+)", AcaoHandler)
+            (r"/acao/(\d+)", AcaoHandler),
+
+            # crud operations
+            (r"/operations", OperationsHandler),
+            (r"/operation", OperationHandler),
+            (r"/operation/(\d+)", OperationIdHandler)
         ]
         settings = dict(
             debug=True,

@@ -7,13 +7,13 @@ session = Conexao.cria_session()
 
 class AcaoQuery:
     @classmethod
-    async def list(cls, user_id):
-        acoes = session.query(Acao).filter_by(user_id=user_id)
+    def list(cls):
+        acoes = session.query(Acao).all()
         return acoes
 
     @classmethod
-    def get_id(cls, user_id, id):
-        acao = session.query(Acao).filter_by(user_id=user_id, id=id).first()
+    def get_id(cls, id):
+        acao = session.query(Acao).filter_by(id=id).first()
         return acao
 
     @classmethod

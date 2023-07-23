@@ -19,8 +19,8 @@ class UserQuery:
         return False if not user else user
 
     @classmethod
-    def save_user(cls, email, password):
-        user = User(email=email, password=hash_password(password))
+    def save_user(cls, name, email, password):
+        user = User(name=name, email=email, password=hash_password(password))
         session.add(user)
         session.commit()
         return user
