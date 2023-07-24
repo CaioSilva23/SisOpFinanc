@@ -1,23 +1,23 @@
-from database.models import Acao
 from handlers.auth import jwtauth
-from queries.query_acao import AcaoQuery
 from .base import Base
 
 
 @jwtauth
 class AcoesHandler(Base):
+    """list acoes disponíveis"""
     def get(self):
-        acoes = AcaoQuery.list()
-        if not acoes:
-            return self.write({"info": "nenhuma ação disponível a venda!"})
-        self.write({"Ações":
+        acoes = self.acoes_list()
+        if acoes:
+            return self.write({"Ações":
                     [{"id": acao.id, "name": acao.name,
                         "description": acao.description,
                         "price_unit": acao.price_unit,
                         "stock": acao.stock}
-                        for acao in acoes]})  # noqa
+                        for acao in acoes]})
+        return self.write({"info": "nenhuma ação disponível a venda!"})
 
     def post(self):
+        """post ação"""
         data = self.data()
 
         name = data.get('name')
@@ -25,18 +25,22 @@ class AcoesHandler(Base):
         price_unit = data.get('price_unit')
         stock = data.get('stock')
 
-        nova_acao = Acao(name=name,
-                         description=description,
-                         price_unit=price_unit,
-                         stock=stock)
-
-        AcaoQuery.save(acao=nova_acao)
-        self.write({"message": "Acao created successfully"})
+        try:
+            self.save_acao(
+                name=name,
+                description=description,
+                price_unit=price_unit,
+                stock=stock
+            )
+            self.write({"message": "Acao created successfully"})
+        except Exception:
+            self.write({"error": "error ao salvar a ação "})
 
 
 class AcaoHandler(Base):
+    """ações detail"""
     def get(self, id):
-        acao = AcaoQuery.get_id(id=id)
+        acao = self.acao_get_id(id=id)
         if not acao:
             self.set_status(404)
             return self.write({'error': {'acao': 'Ação not found'}})
@@ -47,3 +51,20 @@ class AcaoHandler(Base):
                             "price_unit": acao.price_unit,
                             "stock": acao.stock
                             }})
+
+
+@jwtauth
+class AcoesForUserHandler(Base):
+    def get(self):
+        minhas_acoes = self.list_acoes_for_user()
+
+        if not minhas_acoes:
+            return self.write({"Ações": "Voce não possui ações!"})
+        return self.write(
+            {"Suas ações":
+                [{"name": acao.name,
+                    "description": acao.description,
+                    "quantity": quantity
+                  }
+                    for acao, quantity in minhas_acoes]}
+                    )

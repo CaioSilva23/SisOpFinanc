@@ -20,7 +20,6 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     money = Column(Float, default=100)
-
     operacoes = relationship('Operacao', back_populates='user')
 
 
@@ -31,7 +30,6 @@ class Acao(Base):
     description = Column(String)
     stock = Column(Integer, nullable=False)
     price_unit = Column(Float, nullable=False)
-
     operacoes = relationship('Operacao', back_populates='acao')
 
 
@@ -45,11 +43,9 @@ class Operacao(Base):
     quantity = Column(Integer, nullable=False)
     price_total = Column(Float, nullable=False)
     date = Column(DateTime, nullable=False)
-
     __table_args__ = (
         CheckConstraint(type_operation.in_(('Compra', 'Venda'))),
     )
-
     user = relationship('User', back_populates='operacoes')
     acao = relationship('Acao', back_populates='operacoes')
 

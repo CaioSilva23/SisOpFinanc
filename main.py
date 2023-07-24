@@ -3,8 +3,8 @@ import tornado.web
 from handlers.user import LoginHandler, \
                                     RegisterHandler, \
                                     ChangePasswordHandler
-from handlers.acoes import AcaoHandler, AcoesHandler
-from handlers.operations import OperationsHandler, OperationHandler, OperationIdHandler
+from handlers.acoes import AcaoHandler, AcoesHandler, AcoesForUserHandler
+from handlers.operations import OperationsHandler, OperationHandler
 import tornado.options
 from logzero import logger
 
@@ -19,18 +19,16 @@ class Application(tornado.web.Application):
             # (r"/reset-password", ResetPassword),
 
             # crud acoes
-            (r"/acoes", AcoesHandler),
-            (r"/acao/(\d+)", AcaoHandler),
+            (r"/acoes", AcoesHandler),  # POST AND LIST AÇÕES
+            (r"/acao/(\d+)", AcaoHandler),  # GET AÇÃO
+            (r"/acoes/user", AcoesForUserHandler),  # GET AÇÃO FOR USER
 
             # crud operations
-            (r"/operations", OperationsHandler),
-            (r"/operation", OperationHandler),
-            (r"/operation/(\d+)", OperationIdHandler)
+            (r"/operations", OperationsHandler),  # POST AND LIST OPERATIONS
+            (r"/operation/(\d+)", OperationHandler)  # GET AND DELETE OPERAÇÃO
         ]
         settings = dict(
             debug=True,
-            cookie_secret='bZJc2sWbQLKos6GkHn/VB9oXwQt8S0R0kRvJ5/xJ89E=',
-
         )
         tornado.web.Application.__init__(self, handlers, **settings)
         # self.session = Conexao.cria_session()
