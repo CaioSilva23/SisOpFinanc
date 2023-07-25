@@ -8,6 +8,7 @@ Financial operations system Rest API
 | ------------- |:-------------:| -----:|
 | tornado | web framework server    |    https://www.tornadoweb.org/ |
 | sqlalchemy      | Object-Relational Mapping | https://www.sqlalchemy.org/ |
+| redis      | caching requests | https://redis.io/ |
 | jwt      | authenticated | https://jwt.io/ |
 | logzero | create application logs   |    https://logzero.readthedocs.io/en/latest/ |
 
