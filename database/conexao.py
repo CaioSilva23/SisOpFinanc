@@ -3,7 +3,6 @@ from sqlalchemy.orm import sessionmaker
 
 
 class Conexao():
-
     @classmethod
     def conecta(cls):
 

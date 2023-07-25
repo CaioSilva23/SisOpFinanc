@@ -42,6 +42,7 @@ class Operacao(Base):
     type_operation = Column(String, nullable=False)  # Compra ou venda
     quantity = Column(Integer, nullable=False)
     price_total = Column(Float, nullable=False)
+    price_unit = Column(Float, nullable=False)
     date = Column(DateTime, nullable=False)
     __table_args__ = (
         CheckConstraint(type_operation.in_(('Compra', 'Venda'))),

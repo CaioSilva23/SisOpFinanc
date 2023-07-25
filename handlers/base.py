@@ -106,46 +106,52 @@ class Base(tornado.web.RequestHandler):
         return acao
 
     def list_acoes_for_user(self):
-        acoes_compradas = (
-            session.query(
-                Acao,
-                func.sum(Operacao.quantity).label('quantity'),
-            )
-            .join(Operacao)
-            .filter(Operacao.user_id == self.get_user(),
-                    Operacao.type_operation == 'Compra')
-            .group_by(Acao)
-            .all()
-        )
-        return acoes_compradas
+        operacoes = session.query(Operacao).filter_by(
+            type_operation='Compra',
+            user_id=self.get_user())
+        return operacoes
     """end tools to actions"""
 
     """tools to operations"""
     def list_operations(self):
         return session.query(Operacao).filter_by(user_id=self.get_user())
 
-    def save_operation(self, acao_id, type_operation, quantity):
-        try:
-            print("11")
-            self.acao_update_quantity(id=acao_id, new_quantity=quantity)
+    def save_operation(self, acao_id, type_operation, quantity, price_venda=None):
 
+        try:
+            
+            
+
+            # if type_operation == 'Venda':
+            #     valor = price_venda
+            # elif type_operation == 'Compra':
+            #     valor = acao.price_unit
             acao = self.acao_get_id(id=acao_id)
+            
+            if type_operation == 'Venda':
+                price_unit = price_venda
+            elif type_operation == 'Compra':
+                self.acao_update_quantity(id=acao_id, new_quantity=quantity)
+                price_unit = acao.price_unit
+
             operacao = Operacao(
                 user_id=self.get_user(),
                 acao_id=acao_id,
                 type_operation=type_operation,
                 quantity=quantity,
-                price_total=acao.price_unit * quantity,
+                price_total=price_unit * quantity,
+                price_unit=price_unit,
                 date=func.now()
             )
             session.add(operacao)
             session.commit()
         except Exception as e:
-            print(f"{e}")
+            self.write(f'----------------{e}')
             session.rollback()
+            return
         finally:
-            print("233")
             session.close()
 
     def operation_get_id(self, id):
-        return session.query(Operacao).filter_by(id=id, user_id=self.get_user()).first()  # noqa
+        operacao = session.query(Operacao).filter_by(id=id, user_id=self.get_user()).first()  # noqa
+        return operacao
