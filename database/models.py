@@ -30,6 +30,7 @@ class Acao(Base):
     description = Column(String)
     stock = Column(Integer, nullable=False)
     price_unit = Column(Float, nullable=False)
+    oferta = Column(Integer, nullable=True)
     operacoes = relationship('Operacao', back_populates='acao')
 
 

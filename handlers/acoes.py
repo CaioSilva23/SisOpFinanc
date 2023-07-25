@@ -12,7 +12,8 @@ class AcoesHandler(Base):
                       "name": acao.name,
                       "description": acao.description,
                       "price_unit": acao.price_unit,
-                      "stock": acao.stock}
+                      "stock": acao.stock,
+                      "oferta": True if acao.oferta else False}
                         for acao in acoes]})
         return self.write({"info": "nenhuma ação disponível a venda!"})
 
@@ -50,7 +51,8 @@ class AcaoHandler(Base):
                             "name": acao.name,
                             "description": acao.description,
                             "price_unit": acao.price_unit,
-                            "stock": acao.stock
+                            "stock": acao.stock,
+                            "oferta": True if acao.oferta else False
                             }})
 
 
@@ -78,12 +80,12 @@ class AcoesForUserHandler(Base):
         valor_unit = self.data().get('valor_unit')
         quantidade = self.data().get('quantity')
 
-        operacao = self.operation_get_id(id=id)
+        operacao = self.operation_get_id(id=int(id))
 
         if operacao.quantity < quantidade:
             return self.write({"error": f"quantidade insuficiente, voce possui {operacao.quantity}"})  # noqa
 
-        save = self.save_operation_purchase(
+        save = self.save_operation_sale(
                 quantity=quantidade,
                 price_venda=valor_unit,
                 old_operation=operacao,

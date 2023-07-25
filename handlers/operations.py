@@ -22,15 +22,20 @@ class OperationsHandler(Base):
         data = self.data()
         acao_id = data.get('acao_id')
         quantity = data.get('quantity')
+        user = self.get_detail_user()
 
         if not (acao_id and quantity):
             return self.write({"error": "preencha os campos"})
+
         acao = self.acao_get_id(id=acao_id)
         if not acao:
             return self.write({"error": "ação nao encontrada"})
+        if user.money < acao.price_unit * quantity:
+            return self.write({"error": "voce não possui fundos suficiente!"})
         if acao.stock < quantity:
             return self.write({"error": "estoque insuficiente"})
-        save = self.save_operation_sale(
+        save = self.save_operation_purchase(
+            user=user,
             acao=acao,
             quantity=quantity)
         if save:

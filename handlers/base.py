@@ -112,9 +112,16 @@ class Base(tornado.web.RequestHandler):
     """tools to operations"""
     def list_operations(self):
         return session.query(Operacao).filter_by(user_id=self.get_user())
+    
+    def get_user_dono(self, id):
+        return session.query(User).filter_by(id=id).first()
 
-    def save_operation_sale(self, acao, quantity):
+    def save_operation_purchase(self, user, acao, quantity):
         try:
+            if acao.oferta:
+                dono = self.get_user_dono(id=int(acao.oferta))
+                dono.money += acao.price_unit * quantity
+            user.money -= acao.price_unit * quantity
             acao.stock -= quantity
             operacao = Operacao(
                 user_id=self.get_user(),
@@ -134,7 +141,7 @@ class Base(tornado.web.RequestHandler):
             session.close
             return False
 
-    def save_operation_purchase(self, quantity, price_venda, old_operation):
+    def save_operation_sale(self, quantity, price_venda, old_operation):
         try:
             old_operation.quantity -= quantity
             old_operation.price_total = old_operation.quantity * old_operation.price_unit  # noqa
@@ -148,6 +155,7 @@ class Base(tornado.web.RequestHandler):
                 date=func.now()
             )
             acao = Acao(
+                    oferta=self.get_user(),
                     name=old_operation.acao.name,
                     description=old_operation.acao.description,
                     price_unit=price_venda,
