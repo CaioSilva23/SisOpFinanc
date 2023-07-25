@@ -18,7 +18,7 @@ Financial operations system Rest API
 * PUTCH - `/api/v1/user` - User change password
 * GET - `/api/v1/actions` - List of available actions
 * POST -`/api/v1/actions` - Create a new action
-* GET -`/api/v1/action` - Detail an action available
+* GET -`/api/v1/action/{id}` - Detail an action available
 * POST -`/api/v1/operations` - Performs share purchase transaction by the user
 * POST -`/api/v1/actions/user` - Performs share sale transaction by the user
 * GET -`/api/v1/operations` - Lists operations performed by a user
