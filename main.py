@@ -2,7 +2,8 @@ import tornado.ioloop
 import tornado.web
 from handlers.user import LoginHandler, \
                                     RegisterHandler, \
-                                    ChangePasswordHandler
+                                    ChangePasswordHandler,\
+                                    UserDetailHandler
 from handlers.acoes import AcaoHandler, AcoesHandler, AcoesForUserHandler
 from handlers.operations import OperationsHandler, OperationHandler
 import tornado.options
@@ -16,16 +17,17 @@ class Application(tornado.web.Application):
             (r"/api/v1/register", RegisterHandler),
             (r"/api/v1/login", LoginHandler),
             (r"/api/v1/change-password", ChangePasswordHandler),
+            (r"/api/v1/user", UserDetailHandler),
             # (r"/reset-password", ResetPassword),
 
             # crud acoes
-            (r"/api/v1/actions", AcoesHandler),  # POST AND LIST AÇÕES
-            (r"/api/v1/action/(\d+)", AcaoHandler),  # GET AÇÃO
-            (r"/api/v1/actions/user", AcoesForUserHandler),  # GET AÇÃO FOR USER
+            (r"/api/v1/actions", AcoesHandler),
+            (r"/api/v1/action/(\d+)", AcaoHandler),
+            (r"/api/v1/actions/user", AcoesForUserHandler),
 
             # crud operations
-            (r"/api/v1/operations", OperationsHandler),  # POST AND LIST OPERATIONS
-            (r"/api/v1/operation/(\d+)", OperationHandler)  # GET AND DELETE OPERAÇÃO
+            (r"/api/v1/operations", OperationsHandler),
+            (r"/api/v1/operation/(\d+)", OperationHandler)
         ]
         settings = dict(
             debug=True,

@@ -32,6 +32,10 @@ class Base(tornado.web.RequestHandler):
     def get_user(self):
         return get_user(token=self.get_token())
 
+    def get_detail_user(self):
+        user = session.query(User).filter_by(id=self.get_user()).first()
+        return user
+
     def get_token(self):
         token = self.request.headers.get('Authorization').split()[1]
         return token

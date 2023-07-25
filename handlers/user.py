@@ -54,6 +54,7 @@ class LoginHandler(Base):
         self.set_status(HTTPStatus.BAD_REQUEST)
         return self.write({"error": "invalid credentials"})
 
+
 @auth
 class ChangePasswordHandler(Base):
     def patch(self):
@@ -89,3 +90,16 @@ class ChangePasswordHandler(Base):
             # alterar a senha do usuário
             self.change_password(user_id=user_id, old_password=old_password, new_password=new_password)  # noqa
             return self.write({"message": "User change password successfully"})
+
+
+@auth
+class UserDetailHandler(Base):
+    def get(self):
+        user = self.get_detail_user()
+        if user:
+            return self.write({"user": {
+                            "name": user.name,
+                            "email": user.email,
+                            "money": user.money}
+                            })
+        return self.write({"error": "user not exists"})
