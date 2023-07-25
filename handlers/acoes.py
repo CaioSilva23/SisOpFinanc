@@ -1,9 +1,9 @@
-from handlers.auth import jwtauth
+from handlers.auth import auth
 from .base import Base
 from database.models import Conexao
 
 
-@jwtauth
+@auth
 class AcoesHandler(Base):
     """list acoes disponíveis"""
     def get(self):
@@ -39,7 +39,7 @@ class AcoesHandler(Base):
             self.write({"error": f"error ao salvar a ação {e}"})
 
 
-@jwtauth
+@auth
 class AcaoHandler(Base):
     """ações detail"""
     def get(self, id):
@@ -56,8 +56,7 @@ class AcaoHandler(Base):
                             }})
 
 
-
-@jwtauth
+@auth
 class AcoesForUserHandler(Base):
     def get(self):
         minhas_acoes = self.list_acoes_for_user()

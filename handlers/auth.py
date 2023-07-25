@@ -1,15 +1,31 @@
-"""
-    JSON Web Token auth for Tornado
-"""
 import jwt
 import datetime
+import redis
 
+# Configurar a conexão com o Redis (conforme mencionado anteriormente)
+redis_host = 'localhost'
+redis_port = 6379
+redis_db = 0
+redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
+
+
+def save_token_redis(user_id, token):
+    #  3600 segundos = 1 hora
+    tempo_expiracao = 3600
+
+    # Armazenar o token no Redis com o ID do usuário como chave
+    redis_key = f"user_token:{user_id}"
+    redis_client.setex(name=redis_key, time=tempo_expiracao, value=token)
+
+
+# Chave secreta para assinar o token (mantenha-a segura e não compartilhe publicamente)
 AUTHORIZATION_HEADER = 'Authorization'
 AUTHORIZATION_METHOD = 'bearer'
 SECRET_KEY = "my_secret_key"
 INVALID_HEADER_MESSAGE = "invalid header authorization"
 MISSING_AUTHORIZATION_KEY = "Missing authorization"
 AUTHORIZTION_ERROR_CODE = 401
+
 
 jwt_options = {
     'verify_signature': True,
@@ -51,7 +67,7 @@ def return_header_error(handler):
     return_auth_error(handler, INVALID_HEADER_MESSAGE)
 
 
-def jwtauth(handler_class):
+def auth(handler_class):
     """
         Tornado JWT Auth Decorator
     """
@@ -64,17 +80,27 @@ def jwtauth(handler_class):
 
                 if not is_valid_header(parts):
                     return_header_error(handler)
-                token = parts[1]                   
+                token = parts[1]
                 try:
-                    jwt.decode(
-                        token,
-                        SECRET_KEY,
-                        options=jwt_options,
-                        algorithms='HS256'
-                    )    
+                    # Decodificar o token usando a chave secreta
+                    payload = jwt.decode(
+                                    token,
+                                    SECRET_KEY,
+                                    options=jwt_options,
+                                    algorithms='HS256'
+                                )
+
+                    user_id = payload['user_id']
+
+                    # Verificar se o token está no Redis
+                    token_salvo = redis_client.get(str(user_id))
+
+                    if token_salvo and token_salvo.decode('utf-8') == token:
+                        pass
+                    else:
+                        return 'token invalido'
                 except Exception as err:
                     return_auth_error(handler, str(err))
-
             else:
                 handler._transforms = []
                 handler.write(MISSING_AUTHORIZATION_KEY)
@@ -100,7 +126,7 @@ def jwtauth(handler_class):
 def generate_jwt_token(user):
     payload = {
         'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)  # noqa Token expira 30 minutos
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # noqa Token expira 1h
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')

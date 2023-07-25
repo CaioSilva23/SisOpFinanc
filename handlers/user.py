@@ -1,5 +1,5 @@
 from collections import defaultdict
-from handlers.auth import generate_jwt_token, get_user, jwtauth
+from handlers.auth import generate_jwt_token, get_user, auth, save_token_redis
 from http import HTTPStatus
 from .base import Base
 
@@ -49,12 +49,12 @@ class LoginHandler(Base):
             user = self.authenticated(email=email, password=password)  # noqa
             if user:
                 token = generate_jwt_token(user)
+                save_token_redis(user_id=user.id, token=token)
                 return self.write({'token': token})
         self.set_status(HTTPStatus.BAD_REQUEST)
         return self.write({"error": "invalid credentials"})
 
-
-@jwtauth
+@auth
 class ChangePasswordHandler(Base):
     def patch(self):
         _my_errors = defaultdict(list)

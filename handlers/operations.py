@@ -1,8 +1,8 @@
-from handlers.auth import jwtauth
+from handlers.auth import auth
 from .base import Base
 
 
-@jwtauth
+@auth
 class OperationsHandler(Base):
     def get(self):
         """lista minhas operações"""
@@ -45,7 +45,7 @@ class OperationsHandler(Base):
             return
 
 
-@jwtauth
+@auth
 class OperationHandler(Base):
     """detail operation for user"""
     def get(self, id):
