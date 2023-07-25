@@ -16,7 +16,8 @@ Financial operations system Rest API
 
 * POST - `/api/v1/register` - Register a new user
 * POST - `/api/v1/login` - User Login
-* PUTCH - `/api/v1/user` - User change password
+* PUTCH - `/api/v1/change-password` - User change password
+* GET - `/api/v1/user` - User change password
 * GET - `/api/v1/actions` - List of available actions
 * POST -`/api/v1/actions` - Create a new action
 * GET -`/api/v1/action/{id}` - Detail an action available
