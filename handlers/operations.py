@@ -21,28 +21,22 @@ class OperationsHandler(Base):
         """operacao de compra"""
         data = self.data()
         acao_id = data.get('acao_id')
-        type_operation = data.get('type_operation')
         quantity = data.get('quantity')
 
-        if not (acao_id and type_operation and quantity):
+        if not (acao_id and quantity):
             return self.write({"error": "preencha os campos"})
-
-        if ('Compra' or 'Venda') not in type_operation:
-            return self.write({"Error": "Tipo de operação inválida!"})
-
-        if type_operation == 'Compra':
-            acao = self.acao_get_id(id=acao_id)
-            if not acao:
-                return self.write({"error": "ação nao encontrada"})
-            if acao.stock < quantity:
-                return self.write({"error": "estoque insuficiente"})
-            self.save_operation(
-                acao_id=acao_id,
-                type_operation=type_operation,
-                quantity=quantity)
+        acao = self.acao_get_id(id=acao_id)
+        if not acao:
+            return self.write({"error": "ação nao encontrada"})
+        if acao.stock < quantity:
+            return self.write({"error": "estoque insuficiente"})
+        save = self.save_operation_sale(
+            acao=acao,
+            quantity=quantity)
+        if save:
             return self.write({"message": "Operation created successfully"})
-        elif type_operation == 'Venda':
-            return
+        else:
+            return self.write({"error": "error, tente novamente!"})
 
 
 @auth

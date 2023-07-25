@@ -1,7 +1,5 @@
 from handlers.auth import auth
 from .base import Base
-from database.models import Conexao
-
 
 @auth
 class AcoesHandler(Base):
@@ -79,33 +77,18 @@ class AcoesForUserHandler(Base):
         id = self.data().get('operacao')
         valor_unit = self.data().get('valor_unit')
         quantidade = self.data().get('quantity')
+
         operacao = self.operation_get_id(id=id)
-        session = Conexao.cria_session()
 
         if operacao.quantity < quantidade:
             return self.write({"error": f"quantidade insuficiente, voce possui {operacao.quantity}"})  # noqa
 
-        try:
-            operacao.quantity -= quantidade
-            operacao.price_total = operacao.quantity * operacao.price_unit
-
-            self.save_acao(
-                name=operacao.acao.name,
-                description=operacao.acao.description,
-                price_unit=valor_unit,
-                stock=quantidade
-            )
-
-            self.save_operation(
-                acao_id=operacao.acao.name,
-                type_operation='Venda',
+        save = self.save_operation_purchase(
                 quantity=quantidade,
                 price_venda=valor_unit,
+                old_operation=operacao,
                )
-
-            session.commit()
-        except Exception:
-            session.rollback()
-        finally:
-            session.close()
+        if save:
             return self.write({"success": "ação vendida com sucesso!"})
+        else:
+            return self.write({"error": "error, tente novamente!"})

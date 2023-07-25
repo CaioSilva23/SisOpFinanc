@@ -98,13 +98,6 @@ class Base(tornado.web.RequestHandler):
     def acao_get_id(self, id):
         return session.query(Acao).filter_by(id=id).first()
 
-    def acao_update_quantity(self, id, new_quantity):
-        acao = self.acao_get_id(id=id)
-        acao.stock -= new_quantity
-        session.commit()
-        session.close()
-        return acao
-
     def list_acoes_for_user(self):
         operacoes = session.query(Operacao).filter_by(
             type_operation='Compra',
@@ -116,51 +109,56 @@ class Base(tornado.web.RequestHandler):
     def list_operations(self):
         return session.query(Operacao).filter_by(user_id=self.get_user())
 
-    def save_operation(self, acao_id, type_operation, quantity, price_venda=None):
-
+    def save_operation_sale(self, acao, quantity):
         try:
-            
-            
-
-            # if type_operation == 'Venda':
-            #     valor = price_venda
-            # elif type_operation == 'Compra':
-            #     valor = acao.price_unit
-            acao = self.acao_get_id(id=acao_id)
-            
-            if type_operation == 'Venda':
-                price_unit = price_venda
-            elif type_operation == 'Compra':
-                self.acao_update_quantity(id=acao_id, new_quantity=quantity)
-                price_unit = acao.price_unit
-
+            acao.stock -= quantity
             operacao = Operacao(
                 user_id=self.get_user(),
-                acao_id=acao_id,
-                type_operation=type_operation,
+                acao_id=acao.id,
+                type_operation='Compra',
                 quantity=quantity,
-                price_total=price_unit * quantity,
-                price_unit=price_unit,
+                price_total=acao.price_unit * quantity,
+                price_unit=acao.price_unit,
                 date=func.now()
             )
             session.add(operacao)
             session.commit()
+            return True
         except Exception as e:
             self.write(f'----------------{e}')
             session.rollback()
-            return
-        finally:
-            session.close()
+            session.close
+            return False
+
+    def save_operation_purchase(self, quantity, price_venda, old_operation):
+        try:
+            old_operation.quantity -= quantity
+            old_operation.price_total = old_operation.quantity * old_operation.price_unit  # noqa
+            operacao = Operacao(
+                user_id=self.get_user(),
+                acao_id=old_operation.id,
+                type_operation='Venda',
+                quantity=quantity,
+                price_total=price_venda * quantity,
+                price_unit=price_venda,
+                date=func.now()
+            )
+            acao = Acao(
+                    name=old_operation.acao.name,
+                    description=old_operation.acao.description,
+                    price_unit=price_venda,
+                    stock=quantity
+                )
+            session.add(operacao)
+            session.add(acao)
+            session.commit()
+            return True
+        except Exception as e:
+            self.write(f'----------------{e}')
+            session.rollback()
+            session.close
+            return False
 
     def operation_get_id(self, id):
         operacao = session.query(Operacao).filter_by(id=id, user_id=self.get_user()).first()  # noqa
         return operacao
-
-    # def operation_update(self, id, new_quantity):
-    #     operation = self.operation_get_id(id=id)
-
-    #     operation.quantity -= new_quantity
-    #     operation.price_total = operation.quantity * operation.price_unit
-    #     session.commit()
-    #     session.close()
-
