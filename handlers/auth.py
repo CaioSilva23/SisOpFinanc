@@ -1,11 +1,13 @@
 import jwt
 import datetime
 import redis
+from decouple import config
+
 
 # Configurar a conexão com o Redis (conforme mencionado anteriormente)
-redis_host = 'localhost'
-redis_port = 6379
-redis_db = 0
+redis_host = config('redis_host', str)
+redis_port = config('redis_port', int)
+redis_db = config('redis_db', int)
 redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
 
 
@@ -14,14 +16,14 @@ def save_token_redis(user_id, token):
     tempo_expiracao = 3600
 
     # Armazenar o token no Redis com o ID do usuário como chave
-    redis_key = f"user_token:{user_id}"
+    redis_key = user_id
     redis_client.setex(name=redis_key, time=tempo_expiracao, value=token)
 
 
-# Chave secreta para assinar o token (mantenha-a segura e não compartilhe publicamente)
+SECRET_KEY = config('SECRET_KEY', str)
+
 AUTHORIZATION_HEADER = 'Authorization'
 AUTHORIZATION_METHOD = 'bearer'
-SECRET_KEY = "my_secret_key"
 INVALID_HEADER_MESSAGE = "invalid header authorization"
 MISSING_AUTHORIZATION_KEY = "Missing authorization"
 AUTHORIZTION_ERROR_CODE = 401
@@ -95,12 +97,12 @@ def auth(handler_class):
                     # Verificar se o token está no Redis
                     token_salvo = redis_client.get(str(user_id))
 
-                    if token_salvo and token_salvo.decode('utf-8') == token:
+                    if token_salvo.decode('utf-8') == token:
                         pass
                     else:
-                        return 'token invalido'
-                except Exception as err:
-                    return_auth_error(handler, str(err))
+                        return_auth_error(handler, 'invalid token')
+                except Exception:
+                    return_auth_error(handler, 'invalid token')
             else:
                 handler._transforms = []
                 handler.write(MISSING_AUTHORIZATION_KEY)
