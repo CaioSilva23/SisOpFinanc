@@ -1,5 +1,6 @@
 from handlers.auth import jwtauth
 from .base import Base
+from database.models import Conexao
 
 
 @jwtauth
@@ -9,10 +10,11 @@ class AcoesHandler(Base):
         acoes = self.acoes_list()
         if acoes:
             return self.write({"Ações":
-                    [{"id": acao.id, "name": acao.name,
-                        "description": acao.description,
-                        "price_unit": acao.price_unit,
-                        "stock": acao.stock}
+                    [{"id": acao.id,
+                      "name": acao.name,
+                      "description": acao.description,
+                      "price_unit": acao.price_unit,
+                      "stock": acao.stock}
                         for acao in acoes]})
         return self.write({"info": "nenhuma ação disponível a venda!"})
 
@@ -55,9 +57,6 @@ class AcaoHandler(Base):
 
 
 
-from database.conexao import Conexao
-session = Conexao.cria_session()
-
 @jwtauth
 class AcoesForUserHandler(Base):
     def get(self):
@@ -81,8 +80,8 @@ class AcoesForUserHandler(Base):
         id = self.data().get('operacao')
         valor_unit = self.data().get('valor_unit')
         quantidade = self.data().get('quantity')
-        
         operacao = self.operation_get_id(id=id)
+        session = Conexao.cria_session()
 
         if operacao.quantity < quantidade:
             return self.write({"error": f"quantidade insuficiente, voce possui {operacao.quantity}"})  # noqa

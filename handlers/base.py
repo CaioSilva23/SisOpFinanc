@@ -155,3 +155,12 @@ class Base(tornado.web.RequestHandler):
     def operation_get_id(self, id):
         operacao = session.query(Operacao).filter_by(id=id, user_id=self.get_user()).first()  # noqa
         return operacao
+
+    # def operation_update(self, id, new_quantity):
+    #     operation = self.operation_get_id(id=id)
+
+    #     operation.quantity -= new_quantity
+    #     operation.price_total = operation.quantity * operation.price_unit
+    #     session.commit()
+    #     session.close()
+
