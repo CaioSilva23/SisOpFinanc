@@ -13,19 +13,19 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             # auth
-            (r"/register", RegisterHandler),
-            (r"/login", LoginHandler),
-            (r"/change-password", ChangePasswordHandler),
+            (r"/api/v1/register", RegisterHandler),
+            (r"/api/v1/login", LoginHandler),
+            (r"/api/v1/change-password", ChangePasswordHandler),
             # (r"/reset-password", ResetPassword),
 
             # crud acoes
-            (r"/acoes", AcoesHandler),  # POST AND LIST AÇÕES
-            (r"/acao/(\d+)", AcaoHandler),  # GET AÇÃO
-            (r"/acoes/user", AcoesForUserHandler),  # GET AÇÃO FOR USER
+            (r"/api/v1/actions", AcoesHandler),  # POST AND LIST AÇÕES
+            (r"/api/v1/action/(\d+)", AcaoHandler),  # GET AÇÃO
+            (r"/api/v1/actions/user", AcoesForUserHandler),  # GET AÇÃO FOR USER
 
             # crud operations
-            (r"/operations", OperationsHandler),  # POST AND LIST OPERATIONS
-            (r"/operation/(\d+)", OperationHandler)  # GET AND DELETE OPERAÇÃO
+            (r"/api/v1/operations", OperationsHandler),  # POST AND LIST OPERATIONS
+            (r"/api/v1/operation/(\d+)", OperationHandler)  # GET AND DELETE OPERAÇÃO
         ]
         settings = dict(
             debug=True,
