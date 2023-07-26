@@ -6,8 +6,9 @@ from handlers.auth import get_user
 import re
 from hashlib import sha256
 from database.conexao import Conexao
-from database.models import User, Acao, Operacao
+from database.models import User, Acao, Operacao, StokAction
 from sqlalchemy import func
+
 
 session = Conexao.cria_session()
 
@@ -21,6 +22,10 @@ class Base(tornado.web.RequestHandler):
 
     def prepare(self):
         pass
+
+    def write_error_(self, msg):
+        self.set_status(404)
+        self.write({'error': msg})
 
     def data(self):
         try:
@@ -85,7 +90,7 @@ class Base(tornado.web.RequestHandler):
 
     """tools to actions"""
     def acoes_list(self):
-        return session.query(Acao).filter(Acao.stock > 0).all()
+        return session.query(Acao).all()
 
     def save_acao(self, name, description, price_unit, stock):
         acao = Acao(
@@ -103,10 +108,8 @@ class Base(tornado.web.RequestHandler):
         return session.query(Acao).filter_by(id=id).first()
 
     def list_acoes_for_user(self):
-        operacoes = session.query(Operacao).filter_by(
-            type_operation='Compra',
-            user_id=self.get_user())
-        return operacoes
+        stock_actions = session.query(StokAction).filter(StokAction.quantity > 0, StokAction.user_id==self.get_user()).all()  # noqa
+        return stock_actions
     """end tools to actions"""
 
     """tools to operations"""
@@ -114,6 +117,7 @@ class Base(tornado.web.RequestHandler):
         return session.query(Operacao).filter_by(user_id=self.get_user())
     
     def get_user_dono(self, id):
+        """busca o dono da ação em oferta"""
         return session.query(User).filter_by(id=id).first()
 
     def save_operation_purchase(self, user, acao, quantity):
@@ -132,22 +136,31 @@ class Base(tornado.web.RequestHandler):
                 price_unit=acao.price_unit,
                 date=func.now()
             )
+
+            stockaction = session.query(StokAction).filter_by(acao_id=acao.id, user_id=self.get_user()).first()  # noqa
+            if stockaction:
+                stockaction.quantity += quantity
+            else:
+                stockaction = StokAction(
+                    user_id=self.get_user(),
+                    acao_id=acao.id,
+                    quantity=quantity,
+                )
+            session.add(stockaction)
             session.add(operacao)
             session.commit()
             return True
-        except Exception as e:
-            self.write(f'----------------{e}')
+        except Exception:
             session.rollback()
             session.close
             return False
 
-    def save_operation_sale(self, quantity, price_venda, old_operation):
+    def save_operation_sale(self, quantity, price_venda, stock_action):
         try:
-            old_operation.quantity -= quantity
-            old_operation.price_total = old_operation.quantity * old_operation.price_unit  # noqa
+            stock_action.quantity -= quantity
             operacao = Operacao(
                 user_id=self.get_user(),
-                acao_id=old_operation.id,
+                acao_id=stock_action.acao.id,
                 type_operation='Venda',
                 quantity=quantity,
                 price_total=price_venda * quantity,
@@ -156,8 +169,8 @@ class Base(tornado.web.RequestHandler):
             )
             acao = Acao(
                     oferta=self.get_user(),
-                    name=old_operation.acao.name,
-                    description=old_operation.acao.description,
+                    name=stock_action.acao.name,
+                    description=stock_action.acao.description,
                     price_unit=price_venda,
                     stock=quantity
                 )
@@ -170,6 +183,10 @@ class Base(tornado.web.RequestHandler):
             session.rollback()
             session.close
             return False
+
+    def stock_action_get(self, id):
+        stock_action = session.query(StokAction).filter_by(id=id, user_id=self.get_user()).first()  # noqa
+        return stock_action
 
     def operation_get_id(self, id):
         operacao = session.query(Operacao).filter_by(id=id, user_id=self.get_user()).first()  # noqa

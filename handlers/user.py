@@ -1,6 +1,5 @@
 from collections import defaultdict
 from handlers.auth import generate_jwt_token, get_user, auth, save_token_redis
-from http import HTTPStatus
 from .base import Base
 
 
@@ -14,8 +13,7 @@ class RegisterHandler(Base):
         password2 = self.data().get('password2')
 
         if not (name and email and password and password2):
-            self.set_status(HTTPStatus.BAD_REQUEST)
-            return self.write({"error": "fill in all fields"})
+            return self.write_error_(msg='fill in all fields')
         else:
             # valida se o email é valido
             _my_errors['email'].append('email invalid') if not self.email_valid(email=email) else None  # noqa
@@ -33,7 +31,7 @@ class RegisterHandler(Base):
 
             # valida se possui erros
             if _my_errors:
-                self.set_status(HTTPStatus.BAD_REQUEST)
+                self.set_status(404)
                 return self.write(_my_errors)
 
             # salvo o novo usuário
@@ -51,8 +49,7 @@ class LoginHandler(Base):
                 token = generate_jwt_token(user)
                 save_token_redis(user_id=user.id, token=token)
                 return self.write({'token': token})
-        self.set_status(HTTPStatus.BAD_REQUEST)
-        return self.write({"error": "invalid credentials"})
+        return self.write_error_(msg='invalid credentials')
 
 
 @auth
@@ -65,8 +62,7 @@ class ChangePasswordHandler(Base):
         new_password2 = self.data().get('new_password2')
 
         if not (old_password and new_password and new_password2):
-            self.set_status(HTTPStatus.BAD_REQUEST)
-            return self.write({"error": "fill in all fields"})
+            return self.write_error_(msg='fill in all fields')
         else:
             # valida se as senhas são iguais
             _my_errors['password'].append('passwords do not match') if new_password != new_password2 else None  # noqa
@@ -102,4 +98,4 @@ class UserDetailHandler(Base):
                             "email": user.email,
                             "money": user.money}
                             })
-        return self.write({"error": "user not exists"})
+        return self.write_error_(msg='user not exists')

@@ -20,7 +20,20 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     money = Column(Float, default=100)
+
     operacoes = relationship('Operacao', back_populates='user')
+    stockactions = relationship('StokAction', back_populates='user')
+
+
+class StokAction(Base):
+    __tablename__ = 'stockactions'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    acao_id = Column(Integer, ForeignKey('acoes.id'), nullable=False)
+    quantity = Column(Integer, nullable=False)
+
+    user = relationship('User', back_populates='stockactions')
+    acao = relationship('Acao', back_populates='stockactions')
 
 
 class Acao(Base):
@@ -31,7 +44,9 @@ class Acao(Base):
     stock = Column(Integer, nullable=False)
     price_unit = Column(Float, nullable=False)
     oferta = Column(Integer, nullable=True)
+
     operacoes = relationship('Operacao', back_populates='acao')
+    stockactions = relationship('StokAction', back_populates='acao')
 
 
 # classe de Operações de Compra e Venda

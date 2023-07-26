@@ -1,6 +1,7 @@
 from handlers.auth import auth
 from .base import Base
 
+
 @auth
 class AcoesHandler(Base):
     """list acoes disponíveis"""
@@ -25,17 +26,18 @@ class AcoesHandler(Base):
         description = data.get('description')
         price_unit = data.get('price_unit')
         stock = data.get('stock')
-
-        try:
-            self.save_acao(
-                name=name,
-                description=description,
-                price_unit=price_unit,
-                stock=stock
-            )
-            self.write({"message": "Acao created successfully"})
-        except Exception as e:
-            self.write({"error": f"error ao salvar a ação {e}"})
+        if (name and description and price_unit and stock):
+            try:
+                self.save_acao(
+                    name=name,
+                    description=description,
+                    price_unit=price_unit,
+                    stock=stock
+                )
+                return self.write({"message": "Acao created successfully"})
+            except Exception:
+                pass
+        return self.write_error_(msg='Invalid data')
 
 
 @auth
@@ -44,8 +46,7 @@ class AcaoHandler(Base):
     def get(self, id):
         acao = self.acao_get_id(id=id)
         if not acao:
-            self.set_status(404)
-            return self.write({'error': {'acao': 'Ação not found'}})
+            return self.write_error_(msg='Action not found')
         return self.write({"Ação":
                            {"id": acao.id,
                             "name": acao.name,
@@ -59,38 +60,36 @@ class AcaoHandler(Base):
 @auth
 class AcoesForUserHandler(Base):
     def get(self):
-        minhas_acoes = self.list_acoes_for_user()
+        stock_actions = self.list_acoes_for_user()
 
-        if not minhas_acoes:
-            return self.write({"Ações": "Voce não possui ações!"})
-        return self.write(
-            {"Suas ações":
-                [{"operation": operacoes.id,
-                    "date": f'{operacoes.date}',
-                    "name": operacoes.acao.name,
-                    "description": operacoes.acao.description,
-                    "quantity": operacoes.quantity,
-                    "value": operacoes.price_total
-                  }
-                    for operacoes in minhas_acoes]}
-                    )
+        if not stock_actions:
+            return self.write_error_(msg='Voce não possui ações!')
+        else:
+            self.write(
+                {"My actions":
+                    [{"stock_id": stock.id,
+                        "action": stock.acao.id,
+                        "name": stock.acao.name,
+                        "description": stock.acao.description,
+                        "quantity": stock.quantity}       
+                        for stock in stock_actions]})
 
     def post(self):
-        id = self.data().get('operacao')
+        id = self.data().get('stock_action')
         valor_unit = self.data().get('valor_unit')
-        quantidade = self.data().get('quantity')
+        quantity = self.data().get('quantity')
 
-        operacao = self.operation_get_id(id=int(id))
-
-        if operacao.quantity < quantidade:
-            return self.write({"error": f"quantidade insuficiente, voce possui {operacao.quantity}"})  # noqa
-
-        save = self.save_operation_sale(
-                quantity=quantidade,
-                price_venda=valor_unit,
-                old_operation=operacao,
-               )
-        if save:
-            return self.write({"success": "ação vendida com sucesso!"})
-        else:
-            return self.write({"error": "error, tente novamente!"})
+        stock_action = self.stock_action_get(id=int(id))
+        if stock_action:
+            if stock_action.quantity < quantity:
+                return self.write_error_(msg=f"quantidade insuficiente, voce possui {stock_action.quantity}")  # noqa
+            save = self.save_operation_sale(
+                    quantity=quantity,
+                    price_venda=valor_unit,
+                    stock_action=stock_action,
+                )
+            if save:
+                return self.write({"success": "ação vendida com sucesso!"})
+            else:
+                return self.write_error_(msg='error, tente novamente!')
+        return self.write_error_(msg='está acão nao possui estoque!')

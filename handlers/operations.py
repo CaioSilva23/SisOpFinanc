@@ -13,6 +13,7 @@ class OperationsHandler(Base):
                       "acao_id": operation.acao_id,
                       "type_operation": operation.type_operation,
                       "quantity": operation.quantity,
+                      "price_unit": operation.price_unit,
                       "price_total": operation.price_total,
                       "data_operacao": f'{operation.date}'}
                         for operation in operations]})
@@ -25,23 +26,23 @@ class OperationsHandler(Base):
         user = self.get_detail_user()
 
         if not (acao_id and quantity):
-            return self.write({"error": "preencha os campos"})
+            return self.write_error_('preencha os campos')
 
         acao = self.acao_get_id(id=acao_id)
         if not acao:
-            return self.write({"error": "ação nao encontrada"})
+            return self.write_error_(msg='ação nao encontrada')
         if user.money < acao.price_unit * quantity:
-            return self.write({"error": "voce não possui fundos suficiente!"})
+            return self.write_error_(msg=f'voce não possui fundos suficiente! {user.money} - {acao.price_unit * quantity}')
         if acao.stock < quantity:
-            return self.write({"error": "estoque insuficiente"})
+            return self.write_error_('estoque insuficiente')
         save = self.save_operation_purchase(
             user=user,
             acao=acao,
             quantity=quantity)
         if save:
-            return self.write({"message": "Operation created successfully"})
+            self.write({"message": "Operation created successfully"})
         else:
-            return self.write({"error": "error, tente novamente!"})
+            return self.write_error_('error, tente novamente!')
 
 
 @auth
@@ -59,4 +60,4 @@ class OperationHandler(Base):
                       "price_total": operation.price_total,
                       "data_operacao": f'{operation.date}'}
                         })
-        return self.write({"error": "Esta operação não é sua ou não existe!"})
+        return self.write_error_('Esta operação não é sua ou não existe!')
