@@ -1,4 +1,4 @@
-from handlers.auth import auth
+from auth.auth import auth
 from .base import Base
 
 
@@ -32,7 +32,7 @@ class OperationsHandler(Base):
         if not acao:
             return self.write_error_(msg='ação nao encontrada')
         if user.money < acao.price_unit * quantity:
-            return self.write_error_(msg=f'voce não possui fundos suficiente! {user.money} - {acao.price_unit * quantity}')
+            return self.write_error_(msg=f'voce não possui fundos suficiente! {user.money} - {acao.price_unit * quantity}')  # noqa
         if acao.stock < quantity:
             return self.write_error_('estoque insuficiente')
         save = self.save_operation_purchase(

@@ -2,7 +2,7 @@ import tornado.ioloop
 import tornado.web
 import json
 from json import JSONDecodeError
-from handlers.auth import get_user
+from auth.auth import get_user
 import re
 from hashlib import sha256
 from database.conexao import Conexao

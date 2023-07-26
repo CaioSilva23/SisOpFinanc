@@ -1,5 +1,5 @@
 from collections import defaultdict
-from handlers.auth import generate_jwt_token, get_user, auth, save_token_redis
+from auth.auth import generate_jwt_token, get_user, auth, save_token_redis
 from .base import Base
 
 

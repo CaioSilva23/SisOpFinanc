@@ -5,16 +5,15 @@ from sqlalchemy.orm import sessionmaker
 class Conexao():
     @classmethod
     def conecta(cls):
-
-        # USUARIO = 'root'
-        # SENHA = '1234'
-        # HOST = 'localhost'
-        # BANCO = 'fastapi'
-        # PORT = '3306'
-        # CONN = f'mysql://{USUARIO}:{SENHA}@{HOST}:{PORT}/{BANCO}'
-        # sqlite:///:dbsqlite
+        db_host = 'db'
+        db_name = 'postgres'
+        db_user = 'postgres'
+        db_password = 'postgres'
+        port = 5432
+    
+        CONN = f'postgresql://{db_user}:{db_password}@{db_host}:{port}/{db_name}'  # noqa
         # CONN = f'sqlite:///:dbsqliteteste'
-        engine = create_engine("sqlite:///sqlite.db")
+        engine = create_engine(CONN)
         return engine
 
     @classmethod
@@ -25,5 +24,3 @@ class Conexao():
         Session.configure(bind=engine)
         session = Session()
         return session
-        # Session = sessionmaker(bind=engine)
-        # return Session()
