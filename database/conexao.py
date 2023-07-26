@@ -1,16 +1,17 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from decouple import config
 
 
 class Conexao():
     @classmethod
     def conecta(cls):
-        db_host = 'db'
-        db_name = 'postgres'
-        db_user = 'postgres'
-        db_password = 'postgres'
-        port = 5432
-    
+        db_host = config('db_host', str)
+        db_name = config('db_name', str)
+        db_user = config('db_user', str)
+        db_password = config('db_password', str)
+        port = config('port', int)
+
         CONN = f'postgresql://{db_user}:{db_password}@{db_host}:{port}/{db_name}'  # noqa
         # CONN = f'sqlite:///:dbsqliteteste'
         engine = create_engine(CONN)
