@@ -15,26 +15,21 @@ class RegisterHandler(Base):
         if not (name and email and password and password2):
             return self.write_error_(msg='fill in all fields')
         else:
-            # valida se o email é valido
-            _my_errors['email'].append('email invalid') if not self.email_valid(email=email) else None  # noqa
+            _my_errors['email'].append('Digite um email válido.') if not self.email_valid(email=email) else None  # noqa
 
-            # valida se já existe usuário com este email
             email_exitst = self.email_exists(email=email)
-            _my_errors['email'].append('user with this email already exists') if email_exitst else None # noqa
+            _my_errors['email'].append('Já existe um usuário cadastrado com este email.') if email_exitst else None # noqa
 
-            # valida se as senhas são iguais
-            _my_errors['password'].append('passwords do not match') if password != password2 else None  # noqa
+            _my_errors['password'].append('As senha precisam ser iguais.') if password != password2 else None  # noqa
 
-            # valida se a senha é forte
             if not self.strong_password(password):
-                _my_errors['password'].append('No mínimo 8 caracteres, possuir pelo menos uma letra minuscula, uma letra maiúscula e um número')  # noqa
+                _my_errors['password'].append('Digite uma senha forte com letras números e símbolos.')  # noqa
 
             # valida se possui erros
             if _my_errors:
                 self.set_status(404)
                 return self.write(_my_errors)
 
-            # salvo o novo usuário
             self.save_user(name=name, email=email, password=password)
             return self.write({"message": "User created successfully"})
 
@@ -49,7 +44,7 @@ class LoginHandler(Base):
                 token = generate_jwt_token(user)
                 save_token_redis(user_id=user.id, token=token)
                 return self.write({'token': token})
-        return self.write_error_(msg='invalid credentials')
+        return self.write_error_(msg='Email e/ou senha inválidos.')
 
 
 @auth
@@ -62,30 +57,23 @@ class ChangePasswordHandler(Base):
         new_password2 = self.data().get('new_password2')
 
         if not (old_password and new_password and new_password2):
-            return self.write_error_(msg='fill in all fields')
+            return self.write_error_(msg='Preencha todos os campos.')
         else:
-            # valida se as senhas são iguais
-            _my_errors['password'].append('passwords do not match') if new_password != new_password2 else None  # noqa
+            _my_errors['password'].append('As senha precisam ser iguais.') if new_password != new_password2 else None  # noqa
 
-            # valida se a senha é forte
             if not self.strong_password(new_password):
-                _my_errors['password'].append('No mínimo 8 caracteres, possuir pelo menos uma letra minuscula, uma letra maiúscula e um número')  # noqa
+                _my_errors['password'].append('Digite uma senha forte com letras números e símbolos.')  # noqa
 
-            # buscar o id do usuario a partir do token
             user_id = get_user(token=self.get_token())
-
-            # verificar se a senha antiga desse usuário está correta
             if not self.chack_old_password(user_id=user_id, old_password=old_password):  # noqa
                 _my_errors['old_password'].append("Old password invalid")
 
-            # valida se possui erros
             if _my_errors:
                 self.set_status(400)
                 return self.write(_my_errors)
 
-            # alterar a senha do usuário
             self.change_password(user_id=user_id, old_password=old_password, new_password=new_password)  # noqa
-            return self.write({"message": "User change password successfully"})
+            return self.write({"success": "Senha alterada com sucesso!"})
 
 
 @auth
@@ -93,9 +81,5 @@ class UserDetailHandler(Base):
     def get(self):
         user = self.get_detail_user()
         if user:
-            return self.write({"user": {
-                            "name": user.name,
-                            "email": user.email,
-                            "money": user.money}
-                            })
-        return self.write_error_(msg='user not exists')
+            return self.write({"name": user.name, "email": user.email,  "money": user.money})  # noqa
+        return self.write_error_(msg='Este usuário não existe.')

@@ -7,7 +7,8 @@ import re
 from hashlib import sha256
 from database.conexao import Conexao
 from database.models import User, Acao, Operacao, StokAction
-from sqlalchemy import func
+from sqlalchemy import func, desc
+from logzero import logger
 
 
 session = Conexao.cria_session()
@@ -15,13 +16,25 @@ session = Conexao.cria_session()
 
 class Base(tornado.web.RequestHandler):
     def set_default_headers(self):
-        self.set_header("access-control-allow-origin", "*")
-        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
-        self.set_header('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS')  # noqa
-        self.set_header("Access-Control-Allow-Headers", "access-control-allow-origin,authorization,content-type")  # noqa
+        if self.application.settings.get('debug'):
+            self.set_dev_cors_headers()
 
-    def prepare(self):
-        pass
+    def set_dev_cors_headers(self):
+        origin = self.request.headers.get('Origin', '*')   # noqa
+        self.set_header("Access-Control-Allow-Origin", origin)
+        self.set_header("Access-Control-Allow-Headers", "*, content-type, authorization, x-requested-with, x-xsrftoken, x-csrftoken")  # noqa
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT, PATCH')  # noqa
+        self.set_header('Access-Control-Expose-Headers', 'content-type, location, *, set-cookie')  # noqa
+        self.set_header('Access-Control-Request-Headers', '*')
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+
+    def options(self, *args, **kwargs):
+        # also set a 204 status code for OPTIONS request
+        if self.application.settings.get('debug'):
+            self.set_status(204)
+        else:
+            self.set_status(204)
+        self.finish()
 
     def write_error_(self, msg):
         self.set_status(404)
@@ -78,11 +91,10 @@ class Base(tornado.web.RequestHandler):
 
     def change_password(self, user_id, old_password, new_password):
         user = self.chack_old_password(user_id, old_password)
-        if user:
-            user.password = self.hash_password(new_password)
-            session.commit()
-            session.close
-            return user
+        user.password = self.hash_password(new_password)
+        session.commit()
+        session.close
+        return user
 
     def hash_password(self, password):
         return sha256(password.encode('utf-8')).hexdigest()
@@ -90,32 +102,36 @@ class Base(tornado.web.RequestHandler):
 
     """tools to actions"""
     def acoes_list(self):
-        return session.query(Acao).all()
+        return session.query(Acao).filter(Acao.stock > 0).order_by(desc('id')).all()  # noqa
 
     def save_acao(self, name, description, price_unit, stock):
-        acao = Acao(
-            name=name,
-            description=description,
-            price_unit=price_unit,
-            stock=stock,
-        )
-        acao = session.add(acao)
-        session.commit()
-        session.close
+        try:
+            acao = Acao(
+                name=name,
+                description=description,
+                price_unit=price_unit,
+                stock=stock,
+            )
+            acao = session.add(acao)
+            session.commit()
+        except Exception:
+            session.rollback()
+            return False
+        session.close()
         return acao
 
     def acao_get_id(self, id):
         return session.query(Acao).filter_by(id=id).first()
 
     def list_acoes_for_user(self):
-        stock_actions = session.query(StokAction).filter(StokAction.quantity > 0, StokAction.user_id==self.get_user()).all()  # noqa
+        stock_actions = session.query(StokAction).filter(StokAction.quantity > 0, StokAction.user_id==self.get_user()).order_by(desc('id')).all()  # noqa
         return stock_actions
     """end tools to actions"""
 
     """tools to operations"""
     def list_operations(self):
-        return session.query(Operacao).filter_by(user_id=self.get_user())
-    
+        return session.query(Operacao).filter_by(user_id=self.get_user()).order_by(desc('id')).all()  # noqa
+
     def get_user_dono(self, id):
         """busca o dono da ação em oferta"""
         return session.query(User).filter_by(id=id).first()
@@ -149,11 +165,12 @@ class Base(tornado.web.RequestHandler):
             session.add(stockaction)
             session.add(operacao)
             session.commit()
-            return True
-        except Exception:
+        except Exception as e:
+            logger.error(e)
             session.rollback()
-            session.close
             return False
+        session.close
+        return operacao
 
     def save_operation_sale(self, quantity, price_venda, stock_action):
         try:
@@ -177,12 +194,12 @@ class Base(tornado.web.RequestHandler):
             session.add(operacao)
             session.add(acao)
             session.commit()
-            return True
         except Exception as e:
-            self.write(f'----------------{e}')
+            logger.error(e)
             session.rollback()
-            session.close
             return False
+        session.close
+        return operacao
 
     def stock_action_get(self, id):
         stock_action = session.query(StokAction).filter_by(id=id, user_id=self.get_user()).first()  # noqa
@@ -191,3 +208,8 @@ class Base(tornado.web.RequestHandler):
     def operation_get_id(self, id):
         operacao = session.query(Operacao).filter_by(id=id, user_id=self.get_user()).first()  # noqa
         return operacao
+
+    def operation_delete(self, operation):
+        session.delete(operation)
+        session.commit()
+        session.close()

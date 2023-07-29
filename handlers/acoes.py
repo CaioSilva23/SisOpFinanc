@@ -1,14 +1,15 @@
 from auth.auth import auth
 from .base import Base
+from logzero import logger
 
 
 @auth
 class AcoesHandler(Base):
-    """list acoes disponíveis"""
     def get(self):
         acoes = self.acoes_list()
         if acoes:
-            return self.write({"Ações":
+            return self.write(
+                {"Ações":
                     [{"id": acao.id,
                       "name": acao.name,
                       "description": acao.description,
@@ -16,45 +17,43 @@ class AcoesHandler(Base):
                       "stock": acao.stock,
                       "oferta": True if acao.oferta else False}
                         for acao in acoes]})
-        return self.write({"info": "nenhuma ação disponível a venda!"})
+        return self.write({"info": "Nenhuma ação disponível a venda!"})
 
     def post(self):
-        """post ação"""
-        data = self.data()
+        try:
+            data = self.data()
+            name = data.get('name')
+            description = data.get('description')
+            price_unit = float(data.get('price_unit'))
+            stock = int(data.get('stock'))
+        except Exception as e:
+            logger.error(e)
+            return self.write_error_(msg="Dados inválidos.")
 
-        name = data.get('name')
-        description = data.get('description')
-        price_unit = data.get('price_unit')
-        stock = data.get('stock')
         if (name and description and price_unit and stock):
-            try:
-                self.save_acao(
-                    name=name,
-                    description=description,
-                    price_unit=price_unit,
-                    stock=stock
+            self.save_acao(
+                name=name,
+                description=description,
+                price_unit=price_unit,
+                stock=stock
                 )
-                return self.write({"message": "Acao created successfully"})
-            except Exception:
-                pass
-        return self.write_error_(msg='Invalid data')
+            return self.write({"success": "Ação criada com sucesso."})
+        return self.write_error_(msg='Dados inválidos.')
 
 
 @auth
 class AcaoHandler(Base):
-    """ações detail"""
     def get(self, id):
         acao = self.acao_get_id(id=id)
-        if not acao:
-            return self.write_error_(msg='Action not found')
-        return self.write({"Ação":
-                           {"id": acao.id,
-                            "name": acao.name,
-                            "description": acao.description,
-                            "price_unit": acao.price_unit,
-                            "stock": acao.stock,
-                            "oferta": True if acao.oferta else False
-                            }})
+        if acao:
+            return self.write(
+                {"id": acao.id,
+                    "name": acao.name,
+                    "description": acao.description,
+                    "price_unit": acao.price_unit,
+                    "stock": acao.stock,
+                    "oferta": True if acao.oferta else False})
+        return self.write_error_(msg='Ação não encontrada')
 
 
 @auth
@@ -66,18 +65,22 @@ class AcoesForUserHandler(Base):
             return self.write_error_(msg='Voce não possui ações!')
         else:
             self.write(
-                {"My actions":
+                {"acoes":
                     [{"stock_id": stock.id,
                         "action": stock.acao.id,
                         "name": stock.acao.name,
                         "description": stock.acao.description,
-                        "quantity": stock.quantity}       
+                        "quantity": stock.quantity} 
                         for stock in stock_actions]})
 
     def post(self):
-        id = self.data().get('stock_action')
-        valor_unit = self.data().get('valor_unit')
-        quantity = self.data().get('quantity')
+        try:
+            id = self.data().get('stock_action')
+            valor_unit = float(self.data().get('valor_unit'))
+            quantity = int(self.data().get('quantity'))
+        except Exception as e:
+            logger.error(e)
+            return self.write_error_(msg="dados inválidos!")
 
         stock_action = self.stock_action_get(id=int(id))
         if stock_action:

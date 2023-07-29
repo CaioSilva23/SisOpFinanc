@@ -7,7 +7,7 @@ from handlers.user import LoginHandler, \
 from handlers.acoes import AcaoHandler, AcoesHandler, AcoesForUserHandler
 from handlers.operations import OperationsHandler, OperationHandler
 import tornado.options
-from logzero import logger
+from logzero import logger, logfile, loglevel, INFO
 
 
 class Application(tornado.web.Application):
@@ -40,5 +40,9 @@ if __name__ == "__main__":
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(8000)
+
     logger.info(f'Listening server on port {8000}')
+    logfile("tornado.log")
+    loglevel(INFO)
+
     tornado.ioloop.IOLoop.instance().start()

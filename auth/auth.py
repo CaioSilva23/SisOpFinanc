@@ -93,16 +93,13 @@ def auth(handler_class):
                                 )
 
                     user_id = payload['user_id']
-
-                    # Verificar se o token está no Redis
                     token_salvo = redis_client.get(str(user_id))
-
                     if token_salvo.decode('utf-8') == token:
                         pass
                     else:
-                        return_auth_error(handler, 'invalid token')
+                        return_auth_error(handler, 'Token inválido.')
                 except Exception:
-                    return_auth_error(handler, 'invalid token')
+                    return_auth_error(handler, 'Token inválido.')
             else:
                 handler._transforms = []
                 handler.write(MISSING_AUTHORIZATION_KEY)

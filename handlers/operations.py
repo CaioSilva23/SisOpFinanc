@@ -1,11 +1,11 @@
 from auth.auth import auth
 from .base import Base
+from logzero import logger
 
 
 @auth
 class OperationsHandler(Base):
     def get(self):
-        """lista minhas operações"""
         operations = self.list_operations()
         self.write({"Operações":
                     [{"id": operation.id,
@@ -19,20 +19,23 @@ class OperationsHandler(Base):
                         for operation in operations]})
 
     def post(self):
-        """operacao de compra"""
-        data = self.data()
-        acao_id = data.get('acao_id')
-        quantity = data.get('quantity')
-        user = self.get_detail_user()
+        try:
+            data = self.data()
+            acao_id = int(data.get('acao_id'))
+            quantity = int(data.get('quantity'))
+        except Exception as e:
+            logger.error(e)
+            return self.write_error_(msg="dados inválidos")
 
+        user = self.get_detail_user()
         if not (acao_id and quantity):
             return self.write_error_('preencha os campos')
 
         acao = self.acao_get_id(id=acao_id)
         if not acao:
             return self.write_error_(msg='ação nao encontrada')
-        if user.money < acao.price_unit * quantity:
-            return self.write_error_(msg=f'voce não possui fundos suficiente! {user.money} - {acao.price_unit * quantity}')  # noqa
+        if user.money < float(acao.price_unit) * quantity:
+            return self.write_error_(msg=f'Voce não possui fundos suficiente! seu saldo R$ {user.money}')  # noqa
         if acao.stock < quantity:
             return self.write_error_('estoque insuficiente')
         save = self.save_operation_purchase(
@@ -40,24 +43,31 @@ class OperationsHandler(Base):
             acao=acao,
             quantity=quantity)
         if save:
-            self.write({"message": "Operation created successfully"})
+            self.write({"success": "Compra realizada com sucesso!"})
         else:
-            return self.write_error_('error, tente novamente!')
+            return self.write_error_("error, tente novamente.")
 
 
 @auth
 class OperationHandler(Base):
-    """detail operation for user"""
     def get(self, id):
         operation = self.operation_get_id(id=id)
         if operation:
-            return self.write({"Operações":
+            return self.write(
+                {"Operações":
                     {"id": operation.id,
-                      "user_id": self.get_user(),
+                     "user_id": self.get_user(),
                       "acao_id": operation.acao_id,
                       "type_operation": operation.type_operation,
                       "quantity": operation.quantity,
                       "price_total": operation.price_total,
-                      "data_operacao": f'{operation.date}'}
-                        })
+                      "data_operacao": f'{operation.date}'}})
         return self.write_error_('Esta operação não é sua ou não existe!')
+
+    def delete(self, id):
+        operation = self.operation_get_id(id=id)
+        if operation:
+            self.operation_delete(operation)
+            return self.write({"success": "operação deletada com successo."})
+        else:
+            self.write_error_(msg="Está operacao não existe.")
