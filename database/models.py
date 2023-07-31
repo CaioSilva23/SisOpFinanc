@@ -30,6 +30,7 @@ class StokAction(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     acao_id = Column(Integer, ForeignKey('acoes.id'), nullable=False)
+    price_unit = Column(Float, nullable=False)
     quantity = Column(Integer, nullable=False)
 
     user = relationship('User', back_populates='stockactions')
@@ -56,7 +57,7 @@ class Operacao(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     acao_id = Column(Integer, ForeignKey('acoes.id'), nullable=False)
     type_operation = Column(String, nullable=False)  # Compra ou venda
-    status = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="Concluído")
     quantity = Column(Integer, nullable=False)
     price_total = Column(Float, nullable=False)
     price_unit = Column(Float, nullable=False)
@@ -65,7 +66,7 @@ class Operacao(Base):
         CheckConstraint(type_operation.in_(('Compra', 'Venda'))),
     )
     __table_args__ = (
-        CheckConstraint(status.in_(('Finalizado', 'Pendente'))),
+        CheckConstraint(status.in_(('Concluído', 'Pendente'))),
     )
     user = relationship('User', back_populates='operacoes')
     acao = relationship('Acao', back_populates='operacoes')

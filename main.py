@@ -3,7 +3,8 @@ import tornado.web
 from handlers.user import LoginHandler, \
                                     RegisterHandler, \
                                     ChangePasswordHandler,\
-                                    UserDetailHandler
+                                    UserDetailHandler, \
+                                    ResetPasswordHandler
 from handlers.acoes import AcaoHandler, AcoesHandler, AcoesForUserHandler
 from handlers.operations import OperationsHandler, OperationHandler
 import tornado.options
@@ -18,7 +19,7 @@ class Application(tornado.web.Application):
             (r"/api/v1/login", LoginHandler),
             (r"/api/v1/change-password", ChangePasswordHandler),
             (r"/api/v1/user", UserDetailHandler),
-            # (r"/reset-password", ResetPassword),
+            (r"/api/v1/reset-password", ResetPasswordHandler),
 
             # crud acoes
             (r"/api/v1/actions", AcoesHandler),

@@ -7,17 +7,15 @@ from logzero import logger
 class AcoesHandler(Base):
     def get(self):
         acoes = self.acoes_list()
-        if acoes:
-            return self.write(
-                {"Ações":
-                    [{"id": acao.id,
-                      "name": acao.name,
-                      "description": acao.description,
-                      "price_unit": acao.price_unit,
-                      "stock": acao.stock,
-                      "oferta": True if acao.oferta else False}
-                        for acao in acoes]})
-        return self.write({"info": "Nenhuma ação disponível a venda!"})
+        return self.write(
+            {"Ações":
+                [{"id": acao.id,
+                    "name": acao.name,
+                    "description": acao.description,
+                    "price_unit": acao.price_unit,
+                    "stock": acao.stock,
+                    "oferta": True if acao.oferta else False}
+                    for acao in acoes]})  
 
     def post(self):
         try:
@@ -60,29 +58,29 @@ class AcaoHandler(Base):
 class AcoesForUserHandler(Base):
     def get(self):
         stock_actions = self.list_acoes_for_user()
-
-        if not stock_actions:
-            return self.write_error_(msg='Voce não possui ações!')
-        else:
-            self.write(
+        return self.write(
                 {"acoes":
                     [{"stock_id": stock.id,
                         "action": stock.acao.id,
                         "name": stock.acao.name,
                         "description": stock.acao.description,
-                        "quantity": stock.quantity} 
+                        "price_unit": stock.acao.price_unit,
+                        "quantity": stock.quantity}
                         for stock in stock_actions]})
 
     def post(self):
         try:
-            id = self.data().get('stock_action')
+            stock_id = self.data().get('stock_action')
             valor_unit = float(self.data().get('valor_unit'))
             quantity = int(self.data().get('quantity'))
         except Exception as e:
             logger.error(e)
             return self.write_error_(msg="dados inválidos!")
 
-        stock_action = self.stock_action_get(id=int(id))
+        if not (stock_id and valor_unit and quantity):
+            return self.write_error_('preencha os campos')
+
+        stock_action = self.stock_action_get(id=int(stock_id))
         if stock_action:
             if stock_action.quantity < quantity:
                 return self.write_error_(msg=f"quantidade insuficiente, voce possui {stock_action.quantity}")  # noqa

@@ -7,16 +7,17 @@ from logzero import logger
 class OperationsHandler(Base):
     def get(self):
         operations = self.list_operations()
-        self.write({"Operações":
-                    [{"id": operation.id,
-                      "user_id": self.get_user(),
-                      "acao_id": operation.acao_id,
-                      "type_operation": operation.type_operation,
-                      "quantity": operation.quantity,
-                      "price_unit": operation.price_unit,
-                      "price_total": operation.price_total,
-                      "data_operacao": f'{operation.date}'}
-                        for operation in operations]})
+        return self.write({"Operações":
+                        [{"id": operation.id,
+                            "user_id": self.get_user(),
+                            "acao_id": operation.acao_id,
+                            "type_operation": operation.type_operation,
+                            "status": operation.status,
+                            "quantity": operation.quantity,
+                            "price_unit": operation.price_unit,
+                            "price_total": operation.price_total,
+                            "data_operacao": f'{operation.date}'}
+                            for operation in operations]})
 
     def post(self):
         try:
@@ -66,8 +67,12 @@ class OperationHandler(Base):
 
     def delete(self, id):
         operation = self.operation_get_id(id=id)
-        if operation:
+
+        if not operation:
+            return self.write_error_(msg="Está operacao não existe.")
+
+        elif operation.status == 'Pendente':
+            return self.write_error_(msg="Você só pode deletar transações finalizadas.")  # noqa
+        else:
             self.operation_delete(operation)
             return self.write({"success": "operação deletada com successo."})
-        else:
-            self.write_error_(msg="Está operacao não existe.")

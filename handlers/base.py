@@ -2,7 +2,7 @@ import tornado.ioloop
 import tornado.web
 import json
 from json import JSONDecodeError
-from auth.auth import get_user
+from auth.auth import get_user as get_user_token
 import re
 from hashlib import sha256
 from database.conexao import Conexao
@@ -48,7 +48,7 @@ class Base(tornado.web.RequestHandler):
 
     """tools to user"""
     def get_user(self):
-        return get_user(token=self.get_token())
+        return get_user_token(token=self.get_token())
 
     def get_detail_user(self):
         user = session.query(User).filter_by(id=self.get_user()).first()
@@ -71,8 +71,8 @@ class Base(tornado.web.RequestHandler):
         return True
 
     def email_exists(self, email):
-        email = session.query(User).filter_by(email=email).first()
-        return False if not email else True
+        user = session.query(User).filter_by(email=email).first()
+        return False if not user else user
 
     def save_user(self, name, email, password):
         user = User(name=name, email=email, password=self.hash_password(password))  # noqa
@@ -94,6 +94,12 @@ class Base(tornado.web.RequestHandler):
         user.password = self.hash_password(new_password)
         session.commit()
         session.close
+        return user
+
+    def reset_password_email(self, user, temp_password):
+        user.password = self.hash_password(temp_password)
+        session.commit()
+        session.close()
         return user
 
     def hash_password(self, password):
@@ -139,14 +145,19 @@ class Base(tornado.web.RequestHandler):
     def save_operation_purchase(self, user, acao, quantity):
         try:
             if acao.oferta:
-                dono = self.get_user_dono(id=int(acao.oferta))
-                dono.money += acao.price_unit * quantity
+                dono_operacao = self.get_operacao_oferta(id=acao.oferta)
+                dono_operacao.status = "Concluído"
+
+                dono_user = self.get_user_dono(id=dono_operacao.user_id)
+                dono_user.money += acao.price_unit * quantity
+
             user.money -= acao.price_unit * quantity
             acao.stock -= quantity
             operacao = Operacao(
                 user_id=self.get_user(),
                 acao_id=acao.id,
                 type_operation='Compra',
+                status="Concluído",
                 quantity=quantity,
                 price_total=acao.price_unit * quantity,
                 price_unit=acao.price_unit,
@@ -160,6 +171,7 @@ class Base(tornado.web.RequestHandler):
                 stockaction = StokAction(
                     user_id=self.get_user(),
                     acao_id=acao.id,
+                    price_unit=acao.price_unit,
                     quantity=quantity,
                 )
             session.add(stockaction)
@@ -179,19 +191,22 @@ class Base(tornado.web.RequestHandler):
                 user_id=self.get_user(),
                 acao_id=stock_action.acao.id,
                 type_operation='Venda',
+                status="Pendente",
                 quantity=quantity,
                 price_total=price_venda * quantity,
                 price_unit=price_venda,
                 date=func.now()
             )
+            session.add(operacao)
+            session.commit()
             acao = Acao(
-                    oferta=self.get_user(),
+                    oferta=operacao.id,
                     name=stock_action.acao.name,
                     description=stock_action.acao.description,
                     price_unit=price_venda,
                     stock=quantity
                 )
-            session.add(operacao)
+
             session.add(acao)
             session.commit()
         except Exception as e:
@@ -213,3 +228,7 @@ class Base(tornado.web.RequestHandler):
         session.delete(operation)
         session.commit()
         session.close()
+
+    def get_operacao_oferta(self, id):
+        operacao = session.query(Operacao).filter_by(id=id).first()  # noqa
+        return operacao
