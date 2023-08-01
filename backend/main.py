@@ -34,7 +34,6 @@ class Application(tornado.web.Application):
             debug=True,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
-        # self.session = Conexao.cria_session()
 
 
 if __name__ == "__main__":

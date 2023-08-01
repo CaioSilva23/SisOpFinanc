@@ -92,12 +92,12 @@ def auth(handler_class):
                                     algorithms='HS256'
                                 )
 
-                    user_id = payload['user_id']
-                    token_salvo = redis_client.get(str(user_id))
-                    if token_salvo.decode('utf-8') == token:
-                        pass
-                    else:
-                        return_auth_error(handler, 'Token inválido.')
+                    # user_id = payload['user_id']
+                    # token_salvo = redis_client.get(str(user_id))
+                    # if token_salvo.decode('utf-8') == token:
+                    #     pass
+                    # else:
+                    #     return_auth_error(handler, 'Token inválido.')
                 except Exception:
                     return_auth_error(handler, 'Token inválido.')
             else:

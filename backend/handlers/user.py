@@ -33,7 +33,7 @@ class RegisterHandler(Base):
                 return self.write(_my_errors)
 
             self.save_user(name=name, email=email, password=password)
-            return self.write({"message": "User created successfully"})
+            return self.write({"message": "Usuário registrado com sucesso"})
 
 
 class LoginHandler(Base):
@@ -47,6 +47,7 @@ class LoginHandler(Base):
                 save_token_redis(user_id=user.id, token=token)
                 return self.write({'token': token})
         return self.write_error_(msg='Email e/ou senha inválidos.')
+
 
 @auth
 class UserDetailHandler(Base):

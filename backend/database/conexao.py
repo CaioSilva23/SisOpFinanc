@@ -14,7 +14,7 @@ class Conexao():
 
         CONN = f'postgresql://{db_user}:{db_password}@{db_host}:{port}/{db_name}'  # noqa
         # CONN = "sqlite:///sqlite.db"
-        engine = create_engine(CONN, echo=True)
+        engine = create_engine(CONN, echo=False)
         return engine
 
     @classmethod
