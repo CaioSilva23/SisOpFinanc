@@ -131,6 +131,7 @@ const Mercado = () => {
                       <ModalCompra
                         handleCompra={postOperacaoCompra}
                         id_acao={acao.id}
+                        price_unit={acao.price_unit}
                       ></ModalCompra>
                     </Typography>
                   </CardContent>

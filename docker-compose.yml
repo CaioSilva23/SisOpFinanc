@@ -22,19 +22,13 @@ services:
     depends_on:
       - db
       - redis
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-      DB_HOST: db
-      DB_PORT: "5432"
-
+    env_file:
+      - ./backend/.env
+ 
   db:
     image: postgres:latest
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+    env_file:
+      - ./backend/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

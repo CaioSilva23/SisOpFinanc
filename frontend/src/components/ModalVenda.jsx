@@ -4,6 +4,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
+import Title from "./Title";
 
 const style = {
   position: "absolute",
@@ -64,6 +65,8 @@ export default function FormVenda({ handleVenda, id_acao }) {
             fullWidth
             margin="normal"
           />
+          <Title>Total: R$ {(quantidade*preco_unit).toFixed(2)}</Title>
+
           <Button type="submit" variant="contained" color="success">
             Vender
           </Button>

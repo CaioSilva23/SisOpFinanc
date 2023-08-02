@@ -6,11 +6,11 @@ from decouple import config
 class Conexao():
     @classmethod
     def conecta(cls):
-        db_host = config('db_host', str)
-        db_name = config('db_name', str)
-        db_user = config('db_user', str)
-        db_password = config('db_password', str)
-        port = config('port', int)
+        db_host = config('DB_HOST', str)
+        db_name = config('POSTGRES_DB', str)
+        db_user = config('POSTGRES_USER', str)
+        db_password = config('POSTGRES_PASSWORD', str)
+        port = config('DB_PORT', int)
 
         CONN = f'postgresql://{db_user}:{db_password}@{db_host}:{port}/{db_name}'  # noqa
         # CONN = "sqlite:///sqlite.db"
