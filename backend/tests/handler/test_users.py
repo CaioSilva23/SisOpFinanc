@@ -7,7 +7,7 @@ DATABASE_URL = 'sqlite:///:memory:'
 
 
 class RegisterTest(tornado.testing.AsyncHTTPTestCase):
-    request_body = b'{"name": "Teste Python", "email": "cai11o10@teste.com", "password": "Caiokaiak@1", "password2": "Caiokaiak@1"}'  # noqa
+    request_body = b'{"name": "Teste Python", "email": "cai11o10@teste.com", "password": "ASDaAAD@233", "password2": "ASDaAAD@233"}'  # noqa
 
     def get_app(self):
         self.db = SQLAlchemy(url=DATABASE_URL)
